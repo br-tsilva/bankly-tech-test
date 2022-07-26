@@ -9,11 +9,8 @@ if (!serverPort) {
 main
   .startServices()
   .then(() => {
-    main.app.listen(serverPort, () => {
-      console.log(`Server has been started at port ${serverPort}`)
-    })
+    main.app.listen(serverPort, () => process.stdout.write(`\nServer has been started at port ${serverPort}\n`))
   })
   .catch((error) => {
-    // log error
     throw new Error(error)
   })

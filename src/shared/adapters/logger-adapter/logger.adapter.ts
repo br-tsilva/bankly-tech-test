@@ -10,7 +10,7 @@ export default class LoggerAdapter implements ILoggerAdapter {
 
   constructor() {
     const nodeEnv = String(config.get('node_env', 'production'))
-    const logsPath = path.resolve(__dirname, '../../../../', '/logs')
+    const logsPath = path.resolve(__dirname, '../../../../', 'logs')
 
     if (!fs.existsSync(logsPath)) {
       fs.mkdirSync(logsPath, {

@@ -1,10 +1,10 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm'
 import { IFinancialOperations, TOperationStatus, TOperationType } from '@domain/models'
-import { uuid } from 'uuidv4'
+import * as uuid from 'uuid'
 
 @Entity('financial-operations')
 export default class FinancialOperationsModel implements IFinancialOperations {
-  @PrimaryColumn({ type: 'uuid', default: uuid(), unique: true })
+  @PrimaryColumn({ type: 'uuid', default: uuid.v4, unique: true })
   readonly operationId!: string
 
   @Column({ type: 'varchar', update: false, nullable: false })

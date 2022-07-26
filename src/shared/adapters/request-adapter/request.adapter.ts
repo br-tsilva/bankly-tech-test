@@ -5,14 +5,14 @@ import IRequestAdapter, { TRequestAdapterPayloadType } from './request.protocol'
 export default class RequestAdapter implements IRequestAdapter {
   _handleResponse(data: any) {
     return {
-      status: data.status | 200,
+      status: data.status || 200,
       data: data.data,
     }
   }
 
   _handleError(data: any) {
     return {
-      status: data.status | 200,
+      status: data.status || data.response?.status || 400,
       data: data.response?.data,
       message: data.message || 'Request has been failed',
     }

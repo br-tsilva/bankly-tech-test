@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import ILoggerService from './logger.protocol'
-import ILoggerAdapter, { LoggerStatus } from '@shared/adapters/logger-adapter/logger.protocol'
+import { default as ILoggerService } from './logger.protocol'
+import { default as ILoggerAdapter, LoggerStatus } from '@shared/adapters/logger-adapter/logger.protocol'
+import { isJson } from '@shared/utils'
 
 export default class LoggerService implements ILoggerService {
   constructor(private loggerAdapter: ILoggerAdapter) {}
@@ -10,13 +11,13 @@ export default class LoggerService implements ILoggerService {
       return [{ error: data.message || data.name, stack: data.stack }]
     }
 
-    if (Object.keys(data).length) {
+    if (isJson(data)) {
       return [data]
     }
 
     if (Array.isArray(data)) {
       const itemsPerParts = 50
-      const parts = new Array(Math.ceil(data.length / itemsPerParts))
+      const parts = new Array(Math.ceil((data.length || 1) / itemsPerParts))
         .fill(undefined)
         .map((_, index) => data.slice(itemsPerParts - index * itemsPerParts, itemsPerParts * index))
 
@@ -34,7 +35,7 @@ export default class LoggerService implements ILoggerService {
 
   log(status: LoggerStatus, message: string, data?: { [x: string]: any }) {
     const traceId = String(Date.now())
-    const handledData = this._handleData(data)
+    const handledData = this._handleData(data || {})
 
     handledData.forEach((part) => this.loggerAdapter.send(traceId, status, message, part || {}))
 

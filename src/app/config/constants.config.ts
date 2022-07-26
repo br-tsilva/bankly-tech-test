@@ -12,5 +12,10 @@ export default <Record<string, string>>{
   db_username: process.env.DB_USERNAME,
   db_password: process.env.DB_PASSWORD,
   db_connect_timeout_in_ms: process.env.DB_CONNECT_TIMEOUT_IN_MS,
-  db_acquire_timeout_in_ms: process.env.DB_ACQUIRE_TIMEOUT_IN_MS,
+
+  rabbitmq_host: process.env.RABBITMQ_HOST,
+  rabbitmq_amqp_port: process.env.RABBITMQ_AMQP_PORT,
+  rabbitmq_http_port: process.env.RABBITMQ_HTTP_PORT,
+  rabbitmq_username: process.env.RABBITMQ_USERNAME,
+  rabbitmq_password: process.env.RABBITMQ_PASSWORD,
 }
