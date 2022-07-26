@@ -2,7 +2,8 @@ import { Request, Response } from 'express'
 import IAccountApi from '@shared/services/account-api/account-api.protocol'
 import { RequestAdapter, LoggerAdapter, DatabaseAdapter, MessengerAdapter } from '@shared/adapters'
 import { AccountApiService, LoggerService, DatabaseService, MessengerService } from '@shared/services'
-import config from '@config'
+import { default as config } from '@config'
+import { buildTransferBalancePayload } from './bankly-account.helper'
 
 export default class BanklyAccountController {
   private accountApi: IAccountApi
@@ -40,7 +41,14 @@ export default class BanklyAccountController {
   }
 
   async transfer(request: Request, response: Response) {
-    response.sendStatus(200)
+    const params = request.body
+
+    const transferResponse = await this.accountApi.transferBalance(buildTransferBalancePayload(params))
+
+    response.status(200).json({
+      status: 200,
+      data: transferResponse,
+    })
   }
 
   async getTransferStatus(request: Request, response: Response) {

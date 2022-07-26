@@ -3,7 +3,7 @@ export type TOperationType = 'Transfer'
 export type TOperationStatus = 'In Queue' | 'Processing' | 'Confirmed' | 'Error'
 
 export default interface IFinancialOperations {
-  operationId: string
+  id: string
   operationType: TOperationType
   fromAccountNumber: string
   toAccountNumber: string

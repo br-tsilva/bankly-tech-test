@@ -33,16 +33,22 @@ export default class AccountApiService implements IAccountApi {
   }
 
   async transferBalance(payload: TransferBalanceParam) {
-    const { fromAccountNumber, toAccountNumber, value } = payload
+    const { fromAccountNumber, toAccountNumber } = payload
 
-    const fromAccount = await this.getBalance(fromAccountNumber)
-    if (fromAccount.balance < value) {
-      throw new ExceptionHelper(`Account N. ${fromAccountNumber} does not have enough balance for this transfer`, {
-        statusCode: httpStatusCodes.NOT_ACCEPTABLE,
+    if (fromAccountNumber === toAccountNumber) {
+      throw new ExceptionHelper(`An operation cannot be carried out between the same account`, {
+        statusCode: httpStatusCodes.CONFLICT,
       })
     }
 
-    await this.getBalance(toAccountNumber)
+    // const fromAccount = await this.getBalance(fromAccountNumber)
+    // if (fromAccount.balance < value) {
+    //   throw new ExceptionHelper(`Account N. ${fromAccountNumber} does not have enough balance for this transfer`, {
+    //     statusCode: httpStatusCodes.NOT_ACCEPTABLE,
+    //   })
+    // }
+
+    // await this.getBalance(toAccountNumber)
 
     await this.databaseService.start()
 
@@ -65,7 +71,7 @@ export default class AccountApiService implements IAccountApi {
       fromAccountNumber: '',
       toAccountNumber: '',
       value: 0,
-      operationId: '',
+      id: '',
       status: '',
     }
   }

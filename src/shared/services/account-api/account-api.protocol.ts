@@ -11,7 +11,7 @@ export type TransferBalanceParam = {
 }
 
 export type TransferBalanceStatus = TransferBalanceParam & {
-  operationId: string
+  id: string
   status: string
 }
 

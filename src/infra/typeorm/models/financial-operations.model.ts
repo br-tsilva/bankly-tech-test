@@ -4,8 +4,8 @@ import * as uuid from 'uuid'
 
 @Entity('financial-operations')
 export default class FinancialOperationsModel implements IFinancialOperations {
-  @PrimaryColumn({ type: 'uuid', default: uuid.v4, unique: true })
-  readonly operationId!: string
+  @PrimaryColumn({ type: 'uuid', unique: true })
+  readonly id!: string
 
   @Column({ type: 'varchar', update: false, nullable: false })
   operationType!: TOperationType
@@ -22,9 +22,15 @@ export default class FinancialOperationsModel implements IFinancialOperations {
   @Column({ type: 'varchar', update: true, nullable: false })
   status!: TOperationStatus
 
-  @UpdateDateColumn({ default: new Date(), update: true, nullable: false })
+  @UpdateDateColumn({ update: true, nullable: false })
   readonly updatedAt!: Date
 
-  @CreateDateColumn({ default: new Date(), update: false, nullable: false })
+  @CreateDateColumn({ update: false, nullable: false })
   readonly createdAt!: Date
+
+  constructor() {
+    if (!this.id) {
+      this.id = uuid.v4()
+    }
+  }
 }

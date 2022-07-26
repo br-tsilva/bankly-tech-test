@@ -8,9 +8,9 @@
     "compose-dev:up": "docker-compose --env-file .env up -d",
     "compose-dev:config": "docker-compose --env-file .env config",
     "typeorm-dev": "tsnd -r tsconfig-paths/register -r dotenv/config node_modules/typeorm/cli.js",
-    "migration-dev:generate": "npm run typeorm-dev -- migration:generate -d src/infra/typeorm/ormconfig.typeorm.ts src/infra/migrations/migration",
+    "migration-dev:generate": "npm run typeorm-dev -- migration:generate -d src/infra/typeorm/ormconfig.typeorm.ts src/infra/typeorm/migrations/migration",
     "migration-dev:revert": "npm run typeorm-dev -- migration:revert",
-    "migrations-dev:run": "npm run typeorm-dev -- migration:run"
+    "migration-dev:run": "npm run typeorm-dev -- migration:run -d src/infra/typeorm/ormconfig.typeorm.ts"
   },
   "keywords": [],
   "author": "",

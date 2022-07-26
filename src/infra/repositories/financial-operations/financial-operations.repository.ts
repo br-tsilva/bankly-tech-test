@@ -11,7 +11,7 @@ export default class FinancialOperationsRepository implements IFinancialOperatio
   }
 
   async getOperationById(operationId: string): Promise<IFinancialOperations | undefined> {
-    return this.repository.findOneBy({ operationId }).then((response) => {
+    return this.repository.findOneBy({ id: operationId }).then((response) => {
       if (!response) {
         return undefined
       }
@@ -20,12 +20,13 @@ export default class FinancialOperationsRepository implements IFinancialOperatio
     })
   }
 
-  async createOperation(body: Omit<IFinancialOperations, 'operationId' | 'status' | 'createdAt' | 'updatedAt'>) {
+  async createOperation(body: Omit<IFinancialOperations, 'id' | 'status' | 'createdAt' | 'updatedAt'>) {
     const createdOperation = this.repository.create({
       fromAccountNumber: body.fromAccountNumber,
       toAccountNumber: body.toAccountNumber,
       operationType: body.operationType,
       value: body.value,
+      status: 'In Queue',
     })
 
     return this.repository.save(createdOperation)
