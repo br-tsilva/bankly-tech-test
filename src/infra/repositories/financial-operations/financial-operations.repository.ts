@@ -19,4 +19,15 @@ export default class FinancialOperationsRepository implements IFinancialOperatio
       return response
     })
   }
+
+  async createOperation(body: Omit<IFinancialOperations, 'operationId' | 'status' | 'createdAt' | 'updatedAt'>) {
+    const createdOperation = this.repository.create({
+      fromAccountNumber: body.fromAccountNumber,
+      toAccountNumber: body.toAccountNumber,
+      operationType: body.operationType,
+      value: body.value,
+    })
+
+    return this.repository.save(createdOperation)
+  }
 }

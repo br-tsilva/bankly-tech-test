@@ -1,4 +1,4 @@
-export type TOperationType = ''
+export type TOperationType = 'Transfer'
 
 export type TOperationStatus = 'In Queue' | 'Processing' | 'Confirmed' | 'Error'
 

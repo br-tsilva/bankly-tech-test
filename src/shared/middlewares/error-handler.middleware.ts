@@ -3,7 +3,6 @@ import { ExceptionHelper } from '@shared/helpers'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default (error: ExceptionHelper | Error, request: Request, response: Response, _: NextFunction) => {
-  console.log(error)
   if (error instanceof ExceptionHelper) {
     response.status(error.status).json({
       status: error.status,

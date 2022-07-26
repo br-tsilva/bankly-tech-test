@@ -1,8 +1,8 @@
-import connectOptions from './connect-options.rabbitmq'
-import { IMessager } from '@shared/services/messager/messager.protocol'
+import { default as connectOptions } from '@infra/rabbitmq/connect-options.rabbitmq'
+import { default as IMessengerAdapter } from './messenger.protocol'
 import { Connection, Channel, connect, Message } from 'amqplib'
 
-export default class RabbitmqServer implements IMessager {
+export default class RabbitmqServer implements IMessengerAdapter {
   private static _instance: Connection
 
   private static _channel: Channel
@@ -24,8 +24,10 @@ export default class RabbitmqServer implements IMessager {
   }
 
   async start() {
-    this.instance = await connect(connectOptions)
-    this.channel = await this.instance.createChannel()
+    if (!this.instance) {
+      this.instance = await connect(connectOptions)
+      this.channel = await this.instance.createChannel()
+    }
   }
 
   async publish(queue: string, message: string) {

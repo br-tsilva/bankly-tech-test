@@ -4,7 +4,7 @@ import { LoggerService } from '@shared/services'
 
 export default class DatabaseService implements IDatabaseService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static _instance: IDatabaseAdapter['instance'] | void
+  private static _instance: IDatabaseAdapter['instance']
 
   constructor(private databaseAdapter: IDatabaseAdapter, private loggerService: LoggerService) {}
 
@@ -17,16 +17,13 @@ export default class DatabaseService implements IDatabaseService {
   }
 
   async start() {
-    if (!this.instance) {
-      this.instance = await this.databaseAdapter.start()
-    }
+    this.instance = await this.databaseAdapter.start()
     this.loggerService.log('SUCCESS', 'A connection has been established to the database')
+    return this.instance
   }
 
   async close(): Promise<void> {
-    if (this.instance) {
-      this.instance = await this.databaseAdapter.close()
-    }
+    await this.databaseAdapter.close()
     this.loggerService.log('SUCCESS', 'A connection has been closed to the database')
   }
 }

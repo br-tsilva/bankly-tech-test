@@ -1,9 +1,10 @@
 import { default as IRequestAdapter } from '@shared/adapters/request-adapter/request.protocol'
 import { default as ILoggerService } from '@shared/services/logger/logger.protocol'
 import { default as IMessengerService } from '@shared/services/messenger/messenger.protocol'
-// import { default as IDatabaseService } from '@shared/adapter/'
+import { FinancialOperationsRepository } from '@infra/repositories'
+import { DatabaseService } from '@shared/services'
 import { default as IAccountApi, TransferBalanceParam } from './account-api.protocol'
-import { buildAccountBalancePayload, buildTransferBalancePayload } from './account-api.helper'
+import { buildAccountBalancePayload } from './account-api.helper'
 import { ExceptionHelper } from '@shared/helpers'
 import { httpStatusCodes } from '@shared/adapters'
 
@@ -12,7 +13,7 @@ export default class AccountApiService implements IAccountApi {
     private serviceHost: string,
     private requestAdapter: IRequestAdapter,
     private messengerService: IMessengerService,
-    // private databaseService:
+    private databaseService: DatabaseService,
     private loggerService: ILoggerService,
   ) {}
 
@@ -31,7 +32,9 @@ export default class AccountApiService implements IAccountApi {
     return buildedPayload
   }
 
-  async transferBalance({ fromAccountNumber, toAccountNumber, value }: TransferBalanceParam) {
+  async transferBalance(payload: TransferBalanceParam) {
+    const { fromAccountNumber, toAccountNumber, value } = payload
+
     const fromAccount = await this.getBalance(fromAccountNumber)
     if (fromAccount.balance < value) {
       throw new ExceptionHelper(`Account N. ${fromAccountNumber} does not have enough balance for this transfer`, {
@@ -41,16 +44,19 @@ export default class AccountApiService implements IAccountApi {
 
     await this.getBalance(toAccountNumber)
 
-    const payload = buildTransferBalancePayload(fromAccountNumber, toAccountNumber, value)
-    await this.messengerService.publish('transfer-balance', JSON.stringify(payload))
+    await this.databaseService.start()
 
-    return {
-      fromAccountNumber: '',
-      toAccountNumber: '',
-      value: 0,
-      operationId: '',
-      status: '',
-    }
+    const financialOperationsRepository = new FinancialOperationsRepository(this.databaseService.instance)
+    const createdOperation = await financialOperationsRepository.createOperation({
+      ...payload,
+      operationType: 'Transfer',
+    })
+
+    await this.databaseService.close()
+
+    await this.messengerService.publish('transfer-balance', JSON.stringify(createdOperation))
+
+    return createdOperation
   }
 
   async getTransferBalanceStatus(operationId: string) {

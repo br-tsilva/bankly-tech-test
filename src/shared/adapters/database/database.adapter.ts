@@ -3,7 +3,7 @@ import { default as IDatabaseAdapter } from './database.protocol'
 import { DataSource } from 'typeorm'
 
 export default class DatabaseAdapter implements IDatabaseAdapter {
-  private static _instance: DataSource | void
+  private static _instance: DataSource
 
   public get instance() {
     return DatabaseAdapter._instance
@@ -14,15 +14,15 @@ export default class DatabaseAdapter implements IDatabaseAdapter {
   }
 
   async start() {
-    if (!this.instance) {
+    if (!this.instance || !this.instance.isInitialized) {
       this.instance = await dataSource.initialize()
     }
     return this.instance
   }
 
   async close() {
-    if (this.instance) {
-      this.instance = await dataSource.destroy()
+    if (this.instance?.isInitialized) {
+      await dataSource.destroy()
     }
   }
 }
