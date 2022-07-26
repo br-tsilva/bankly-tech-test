@@ -52,6 +52,13 @@ export default class BanklyAccountController {
   }
 
   async getTransferStatus(request: Request, response: Response) {
-    response.sendStatus(200)
+    const params = request.params
+
+    const transferStatusResponse = await this.accountApi.getTransferBalanceStatus(params.operationId)
+
+    response.status(200).json({
+      status: 200,
+      data: transferStatusResponse,
+    })
   }
 }

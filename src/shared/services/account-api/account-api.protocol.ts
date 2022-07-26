@@ -10,13 +10,12 @@ export type TransferBalanceParam = {
   value: number
 }
 
-export type TransferBalanceStatus = TransferBalanceParam & {
-  id: string
+export type TransferBalanceStatus = {
   status: string
 }
 
 export default interface IAccountApi {
   getBalance(accountNumber: string): Promise<AccountBalance>
-  transferBalance(params: TransferBalanceParam): Promise<TransferBalanceStatus>
+  transferBalance(params: TransferBalanceParam): Promise<TransferBalanceStatus & TransferBalanceParam>
   getTransferBalanceStatus(operationId: string): Promise<TransferBalanceStatus>
 }

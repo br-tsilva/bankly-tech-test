@@ -66,13 +66,21 @@ export default class AccountApiService implements IAccountApi {
   }
 
   async getTransferBalanceStatus(operationId: string) {
-    console.log(operationId)
+    await this.databaseService.start()
+
+    const financialOperationsRepository = new FinancialOperationsRepository(this.databaseService.instance)
+    const foundOperation = await financialOperationsRepository.getOperationById(operationId)
+
+    await this.databaseService.close()
+
+    if (!foundOperation) {
+      throw new ExceptionHelper(`No operation found with id ${operationId}`, {
+        statusCode: httpStatusCodes.NOT_FOUND,
+      })
+    }
+
     return {
-      fromAccountNumber: '',
-      toAccountNumber: '',
-      value: 0,
-      id: '',
-      status: '',
+      status: foundOperation.status,
     }
   }
 }
