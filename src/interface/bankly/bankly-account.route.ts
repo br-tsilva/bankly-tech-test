@@ -8,6 +8,10 @@ const path = '/bankly'
 
 const banklyAccountController = new BanklyAccountController()
 
+router.get(`${path}/accounts`, validator(banklyAccountValidator.getAccounts), async (request, response) => {
+  await banklyAccountController.getAccounts(request, response)
+})
+
 router.get(
   `${path}/account/:accountNumber/balance`,
   validator(banklyAccountValidator.getBalance),

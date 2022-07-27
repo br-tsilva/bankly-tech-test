@@ -1,5 +1,7 @@
 import { SchemaDefinition } from 'validate'
 
+const getAccounts = <SchemaDefinition>{}
+
 const getBalance = <SchemaDefinition>{
   accountNumber: {
     type: Number,
@@ -35,4 +37,4 @@ const createTransaction = <SchemaDefinition>{
   },
 }
 
-export default { getBalance, getTransactionStatus, createTransaction }
+export default { getAccounts, getBalance, getTransactionStatus, createTransaction }

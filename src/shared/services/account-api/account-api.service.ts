@@ -9,7 +9,7 @@ import {
   TransactionCreatorParam,
   UpdateBalanceParam,
 } from './account-api.protocol'
-import { buildAccountBalancePayload } from './account-api.helper'
+import { buildAccountBalancePayload, buildAccountsPayload } from './account-api.helper'
 import { ExceptionHelper } from '@shared/helpers'
 import { httpStatusCodes } from '@shared/adapters'
 import { Transactions } from '@domain/useCases'
@@ -33,9 +33,23 @@ export default class AccountApiService implements IAccountApi {
     this.serviceHost = `${serviceHost}:${servicePort}`
   }
 
+  async getAccounts() {
+    const response = await this.requestAdapter.get(`http://${this.serviceHost}/api/Account`)
+    if (response.status >= 300) {
+      const { traceId, message } = this.loggerService.log('ERROR', `Error to get accounts`, response.data)
+
+      throw new ExceptionHelper(message, {
+        statusCode: response.status,
+        traceId,
+      })
+    }
+
+    const buildedPayload = buildAccountsPayload(response.data)
+    return buildedPayload
+  }
+
   async getBalance(accountNumber: string) {
     const response = await this.requestAdapter.get(`http://${this.serviceHost}/api/Account/${accountNumber}`)
-
     if (response.status >= 300) {
       const { traceId, message } = this.loggerService.log(
         'ERROR',

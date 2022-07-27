@@ -24,6 +24,15 @@ export default class BanklyAccountController {
     return this
   }
 
+  async getAccounts(request: Request, response: Response) {
+    const accountsResponse = await this.accountApi.getAccounts()
+
+    response.status(200).json({
+      status: 200,
+      data: accountsResponse,
+    })
+  }
+
   async getBalance(request: Request, response: Response) {
     const params = request.params
 

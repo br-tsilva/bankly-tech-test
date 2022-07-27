@@ -1,3 +1,7 @@
+export type Accounts = {
+  id: number
+} & AccountBalance
+
 export type AccountBalance = {
   accountNumber: string
   balance: number
@@ -16,6 +20,7 @@ export type TransactionCreatorParam = {
 }
 
 export default interface IAccountApi {
+  getAccounts(): Promise<Accounts[]>
   getBalance(accountNumber: string): Promise<AccountBalance>
   updateBalance(params: UpdateBalanceParam): Promise<AccountBalance>
   createTransaction(params: TransactionCreatorParam): Promise<{ transactionId: string }>
