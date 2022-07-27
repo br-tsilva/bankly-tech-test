@@ -1,8 +1,10 @@
 import { Router } from 'express'
-import banklyAccountRouter from './bankly-account/bankly-account.route'
+import banklyAccountRouter from './bankly/bankly-account.route'
+import docsRouter from './docs/docs.route'
 
 const router = Router()
 
-router.use('/', banklyAccountRouter)
+router.use('/v1', banklyAccountRouter)
+router.use('/docs', docsRouter)
 
 export default router

@@ -4,7 +4,7 @@ import { Router } from 'express'
 import { validator } from '@shared/middlewares'
 
 const router = Router()
-const path = '/bankly-account'
+const path = '/bankly'
 
 const banklyAccountController = new BanklyAccountController()
 
