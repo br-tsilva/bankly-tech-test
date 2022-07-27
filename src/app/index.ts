@@ -1,4 +1,5 @@
 import 'express-async-errors'
+import 'reflect-metadata'
 import { default as express } from 'express'
 import { DatabaseAdapter, MessengerAdapter, LoggerAdapter, RequestAdapter } from '@shared/adapters'
 import { DatabaseService, LoggerService, MessengerService, AccountApiService } from '@shared/services'
