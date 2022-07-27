@@ -2,16 +2,12 @@ import { Request, Response } from 'express'
 import IAccountApi from '@shared/services/account-api/account-api.protocol'
 import { RequestAdapter, LoggerAdapter, DatabaseAdapter, MessengerAdapter } from '@shared/adapters'
 import { AccountApiService, LoggerService, DatabaseService, MessengerService } from '@shared/services'
-import { default as config } from '@config'
 import { buildTransferBalancePayload } from './bankly-account.helper'
 
 export default class BanklyAccountController {
   private accountApi: IAccountApi
 
   constructor() {
-    const banklyHost = String(config.get('bankly_host', 'localhost'))
-    const banklyPort = String(config.get('bankly_port', '80'))
-
     const loggerAdapter = new LoggerAdapter()
     const databaseAdapter = new DatabaseAdapter()
     const messengerAdapter = new MessengerAdapter()
@@ -19,7 +15,6 @@ export default class BanklyAccountController {
     const loggerService = new LoggerService(loggerAdapter)
 
     this.accountApi = new AccountApiService(
-      `${banklyHost}:${banklyPort}`,
       new RequestAdapter(),
       new MessengerService(messengerAdapter, loggerService),
       new DatabaseService(databaseAdapter, loggerService),

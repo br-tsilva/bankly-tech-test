@@ -18,17 +18,17 @@ const getTransferStatus = <SchemaDefinition>{
 }
 
 const transfer = <SchemaDefinition>{
-  fromAccountNumber: {
+  accountOrigin: {
     type: Number,
     required: true,
     message: { required: 'Origin Account Number is required' },
   },
-  toAccountNumber: {
+  accountDestination: {
     type: Number,
     required: true,
     message: { required: 'Destiny Account Number is required' },
   },
-  valueToTransfer: {
+  value: {
     type: Number,
     required: true,
     message: { required: 'Value to transfer is required' },

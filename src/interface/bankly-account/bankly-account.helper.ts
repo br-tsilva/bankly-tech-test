@@ -3,9 +3,9 @@ import { TransferBalanceParam } from '@shared/services/account-api/account-api.p
 
 const buildTransferBalancePayload = (data: { [x: string]: any }): TransferBalanceParam => {
   return {
-    fromAccountNumber: String(data.fromAccountNumber),
-    toAccountNumber: String(data.toAccountNumber),
-    value: Number(data.valueToTransfer),
+    accountOrigin: String(data.accountOrigin),
+    accountDestination: String(data.accountDestination),
+    value: Number(data.value),
   }
 }
 

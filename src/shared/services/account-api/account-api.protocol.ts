@@ -1,21 +1,23 @@
 export type AccountBalance = {
-  accountId: number
   accountNumber: string
   balance: number
 }
 
-export type TransferBalanceParam = {
-  fromAccountNumber: string
-  toAccountNumber: string
+export type UpdateBalanceParam = {
+  accountNumber: string
   value: number
+  type: 'Credit' | 'Debit'
 }
 
-export type TransferBalanceStatus = {
-  status: string
+export type TransferBalanceParam = {
+  accountOrigin: string
+  accountDestination: string
+  value: number
 }
 
 export default interface IAccountApi {
   getBalance(accountNumber: string): Promise<AccountBalance>
-  transferBalance(params: TransferBalanceParam): Promise<TransferBalanceStatus & TransferBalanceParam>
-  getTransferBalanceStatus(operationId: string): Promise<TransferBalanceStatus>
+  updateBalance(params: UpdateBalanceParam): Promise<AccountBalance>
+  transferBalance(params: TransferBalanceParam): Promise<{ transactionId: string }>
+  getTransferBalanceStatus(operationId: string): Promise<{ status: string; error: string }>
 }

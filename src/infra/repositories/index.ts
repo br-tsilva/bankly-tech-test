@@ -1,1 +1,2 @@
-export { default as FinancialOperationsRepository } from './financial-operations/financial-operations.repository'
+export { default as OperationsRepository } from './operations/operations.repository'
+export { default as TransactionsRepository } from './transactions/transactions.repository'

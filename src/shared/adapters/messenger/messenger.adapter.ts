@@ -1,6 +1,6 @@
 import { default as connectOptions } from '@infra/rabbitmq/connect-options.rabbitmq'
 import { default as IMessengerAdapter } from './messenger.protocol'
-import { Connection, Channel, connect, Message } from 'amqplib'
+import { Connection, Channel, connect } from 'amqplib'
 
 export default class RabbitmqServer implements IMessengerAdapter {
   private static _instance: Connection
@@ -31,14 +31,23 @@ export default class RabbitmqServer implements IMessengerAdapter {
   }
 
   async publish(queue: string, message: string) {
+    await this.channel.assertQueue(queue, {
+      durable: true,
+    })
+
     await this.channel.sendToQueue(queue, Buffer.from(message))
   }
 
-  async consume(queue: string, callback: (message: Message) => void) {
+  async consume(queue: string, callback: (message: string, done: () => void) => Promise<void>) {
+    await this.channel.assertQueue(queue, {
+      durable: true,
+    })
+
     await this.channel.consume(queue, (message) => {
       if (message) {
-        callback(message)
-        this.channel.ack(message)
+        callback(message.content.toString(), () => {
+          this.channel.ack(message)
+        })
       }
     })
   }

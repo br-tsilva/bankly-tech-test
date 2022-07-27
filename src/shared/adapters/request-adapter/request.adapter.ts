@@ -14,7 +14,6 @@ export default class RequestAdapter implements IRequestAdapter {
     return {
       status: data.status || data.response?.status || 400,
       data: data.response?.data,
-      message: data.message || 'Request has been failed',
     }
   }
 

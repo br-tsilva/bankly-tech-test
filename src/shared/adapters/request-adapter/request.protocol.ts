@@ -2,7 +2,6 @@
 export type TRequestAdapterResponse = {
   status: number
   data: { [x: string]: any }
-  message?: string
 }
 
 export type TRequestAdapterPayloadType = 'JSON' | 'URLENCODED'

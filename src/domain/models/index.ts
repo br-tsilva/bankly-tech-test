@@ -1,5 +1,2 @@
-export {
-  default as IFinancialOperations,
-  TOperationType,
-  TOperationStatus,
-} from './financial-operations/financial-operations.protocol'
+export { default as IOperations, OperationType, OperationStatus } from './operations.model'
+export { default as ITransactions, TransactionStatus } from './transactions.model'
