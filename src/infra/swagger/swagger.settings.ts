@@ -19,6 +19,51 @@ export default <JsonObject>{
     },
   ],
   paths: {
+    '/v1/bankly/accounts': {
+      get: {
+        summary: 'Accounts',
+        description: 'Get a list accounts',
+        tags: ['Account'],
+        responses: {
+          200: {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: {
+                      type: 'integer',
+                      description: 'Status code request',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: {
+                            type: 'integer',
+                            description: 'Account Id',
+                          },
+                          accountNumber: {
+                            type: 'string',
+                            description: 'Account Number',
+                          },
+                          balance: {
+                            type: 'integer',
+                            description: 'Balance account',
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     '/v1/bankly/account/{accountNumber}/balance': {
       get: {
         summary: 'Account Balance',
@@ -49,7 +94,7 @@ export default <JsonObject>{
                       description: 'Content Request',
                       properties: {
                         accountNumber: {
-                          type: 'integer',
+                          type: 'string',
                           description: 'Account Number',
                         },
                         balance: {
