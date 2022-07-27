@@ -21,7 +21,7 @@ export default class Transactions {
     return Transactions._updateStatusQueue
   }
 
-  async updateStatus(content: string, done: () => void): Promise<void> {
+  async updateStatus(content: string): Promise<void> {
     const { transactionId }: TransactionContentQueue = JSON.parse(content)
 
     const transactionsRepository = new TransactionsRepository(this.databaseService.instance)
@@ -49,14 +49,29 @@ export default class Transactions {
 
       if (pendingOperations.length) {
         await transactionsRepository.updateTransactionStatus(transactionId, 'Processing')
+        this.loggerService.log('SUCCESS', `Transaction N. ${transactionId} has been updated to "Processing" status`, {
+          transactionId,
+        })
 
         const operationsContent: OperationsContentQueue[] = pendingOperations.map((operation) => ({
           transactionId: transaction.id,
           operationId: operation.id,
         }))
 
+        this.loggerService.log('SUCCESS', `Operations referring to transaction N. ${transactionId} has been builded`, {
+          operationsContent,
+        })
+
         for (const operation of operationsContent) {
           await operationsRepository.updateOperationStatus(operation.operationId, 'In Queue')
+          this.loggerService.log(
+            'SUCCESS',
+            `Operation N. ${operation.operationId} has been updated to "In Queue" status`,
+            {
+              operation,
+            },
+          )
+
           this.messengerService.publish(Operations.updateBalanceQueue, JSON.stringify(operation))
         }
         return
@@ -76,12 +91,20 @@ export default class Transactions {
       }
 
       await transactionsRepository.updateTransactionStatus(transactionId, status)
+      this.loggerService.log('SUCCESS', `Transaction N. ${transactionId} has been updated to "${status}" status`, {
+        transaction,
+      })
     } catch (error) {
       if (error instanceof Exception || error instanceof Error) {
-        await transactionsRepository.updateTransactionStatus(transactionId, 'Error', error.message)
+        const { message } = this.loggerService.log('ERROR', error.message, {
+          transactionId,
+        })
+
+        await transactionsRepository.updateTransactionStatus(transactionId, 'Error', message)
+        this.loggerService.log('SUCCESS', `Transaction N. ${transactionId} has been updated to "Error" status`, {
+          transactionId,
+        })
       }
-    } finally {
-      done()
     }
   }
 }

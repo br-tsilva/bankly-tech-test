@@ -37,10 +37,13 @@ export default class AccountApiService implements IAccountApi {
     const response = await this.requestAdapter.get(`http://${this.serviceHost}/api/Account/${accountNumber}`)
 
     if (response.status >= 300) {
-      const errorMessage = `Error to get balance from account n. ${accountNumber}`
-      const { traceId } = this.loggerService.log('ERROR', errorMessage, response.data)
+      const { traceId, message } = this.loggerService.log(
+        'ERROR',
+        `Error to get balance from account N. ${accountNumber}`,
+        response.data,
+      )
 
-      throw new ExceptionHelper(errorMessage, {
+      throw new ExceptionHelper(message, {
         statusCode: response.status,
         traceId,
       })
@@ -70,8 +73,15 @@ export default class AccountApiService implements IAccountApi {
     const { accountOrigin, accountDestination } = params
 
     if (accountOrigin === accountDestination) {
-      throw new ExceptionHelper(`An operation cannot be carried out between the same account`, {
+      const { traceId, message } = this.loggerService.log(
+        'REJECTED',
+        'An operation cannot be carried out between the same account',
+        params,
+      )
+
+      throw new ExceptionHelper(message, {
         statusCode: httpStatusCodes.CONFLICT,
+        traceId,
       })
     }
 
@@ -82,6 +92,9 @@ export default class AccountApiService implements IAccountApi {
       value: params.value,
       status: 'In Queue',
     })
+
+    this.loggerService.log('SUCCESS', `Transaction N. ${createdTransaction.id} has been created`, createdTransaction)
+
     await Promise.all([
       operationsRepository.createOperation({
         transactionId: createdTransaction.id,
@@ -96,6 +109,18 @@ export default class AccountApiService implements IAccountApi {
         type: 'Credit',
       }),
     ])
+      .then((operations) => {
+        operations.forEach((operation) =>
+          this.loggerService.log('SUCCESS', `Operation N. ${operation.id} has been created`, operation),
+        )
+      })
+      .catch((error) => {
+        this.loggerService.log(
+          'ERROR',
+          `Error creating operation referring to transaction N. ${createdTransaction.id}`,
+          error,
+        )
+      })
 
     const payload = { transactionId: createdTransaction.id }
 
@@ -109,8 +134,13 @@ export default class AccountApiService implements IAccountApi {
     const transaction = await operationsRepository.getTransactionById(transactionId)
 
     if (!transaction) {
-      throw new ExceptionHelper(`No transaction found with id ${transactionId}`, {
+      const { traceId, message } = this.loggerService.log('ERROR', `No transaction found with id ${transactionId}`, {
+        transactionId,
+      })
+
+      throw new ExceptionHelper(message, {
         statusCode: httpStatusCodes.NOT_FOUND,
+        traceId,
       })
     }
 

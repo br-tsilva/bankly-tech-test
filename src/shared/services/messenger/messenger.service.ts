@@ -15,7 +15,7 @@ export default class MessengerService implements IMessengerService {
     await this.messagerAdapter.publish(queue, message)
   }
 
-  async consume(queue: string, callback: (message: any, done: () => void) => Promise<void>) {
+  async consume(queue: string, callback: (message: any) => Promise<void>) {
     await this.messagerAdapter.consume(queue, callback)
   }
 }

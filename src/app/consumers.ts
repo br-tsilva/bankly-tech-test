@@ -22,14 +22,8 @@ export default class Consumers {
       this.accountApiService,
     )
 
-    this.messengerService.consume(Transactions.updateStatusQueue, (message, done) =>
-      transactions.updateStatus(message, done),
-    )
-    this.messengerService.consume(Operations.updateBalanceQueue, (message, done) =>
-      operations.updateBalance(message, done),
-    )
-    this.messengerService.consume(Operations.refundBalanceQueue, (message, done) =>
-      operations.refundBalance(message, done),
-    )
+    this.messengerService.consume(Transactions.updateStatusQueue, (message) => transactions.updateStatus(message))
+    this.messengerService.consume(Operations.updateBalanceQueue, (message) => operations.updateBalance(message))
+    this.messengerService.consume(Operations.refundBalanceQueue, (message) => operations.refundBalance(message))
   }
 }

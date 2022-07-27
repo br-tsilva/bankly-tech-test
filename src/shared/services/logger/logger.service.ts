@@ -39,6 +39,6 @@ export default class LoggerService implements ILoggerService {
 
     handledData.forEach((part) => this.loggerAdapter.send(traceId, status, message, part || {}))
 
-    return { traceId }
+    return { traceId, message }
   }
 }

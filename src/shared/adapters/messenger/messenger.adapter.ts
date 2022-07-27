@@ -38,16 +38,15 @@ export default class RabbitmqServer implements IMessengerAdapter {
     await this.channel.sendToQueue(queue, Buffer.from(message))
   }
 
-  async consume(queue: string, callback: (message: string, done: () => void) => Promise<void>) {
+  async consume(queue: string, callback: (message: string) => Promise<void>) {
     await this.channel.assertQueue(queue, {
       durable: true,
     })
 
     await this.channel.consume(queue, (message) => {
       if (message) {
-        callback(message.content.toString(), () => {
-          this.channel.ack(message)
-        })
+        callback(message.content.toString())
+        this.channel.ack(message)
       }
     })
   }
