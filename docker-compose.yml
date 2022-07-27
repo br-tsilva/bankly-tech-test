@@ -9,8 +9,6 @@ services:
       context: .
       dockerfile: dev.Dockerfile
     container_name: bankly_app
-    volumes:
-      - /Docker/logs:/process/logs
     ports:
       - $SERVER_PORT:3000
     depends_on:
