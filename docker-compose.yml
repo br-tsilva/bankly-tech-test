@@ -4,6 +4,23 @@ networks:
     driver: bridge
 
 services:
+  bankly-app:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    container_name: bankly_app
+    volumes:
+      - /Docker/logs:/process/logs
+    ports:
+      - $SERVER_PORT:3000
+    depends_on:
+      - mysql
+      - rabbitmq
+    networks:
+      - app_network
+    env_file:
+      - .env
+    restart: always
   mysql:
     image: mysql:8.0
     container_name: bankly_mysql_service
@@ -31,9 +48,3 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=$RABBITMQ_USERNAME
       - RABBITMQ_DEFAULT_PASS=$RABBITMQ_PASSWORD
-  account-api:
-    image: baldini/testacesso
-    container_name: bankly_api
-    restart: always
-    ports:
-      - $BANKLY_SERVICE_PORT:80

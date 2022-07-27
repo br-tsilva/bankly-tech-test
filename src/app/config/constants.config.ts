@@ -4,7 +4,6 @@ export default <Record<string, string>>{
   server_port: process.env.SERVER_PORT,
 
   bankly_host: process.env.BANKLY_SERVICE_HOST,
-  bankly_port: process.env.BANKLY_SERVICE_PORT,
 
   db_host: process.env.DB_HOST,
   db_port: process.env.DB_PORT,

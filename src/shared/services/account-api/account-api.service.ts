@@ -25,16 +25,15 @@ export default class AccountApiService implements IAccountApi {
     private loggerService: ILoggerService,
   ) {
     const serviceHost = config.get('bankly_host')
-    const servicePort = config.get('bankly_port')
-    if (!serviceHost || !servicePort) {
-      throw new Error('No bankly service host or port configured')
+    if (!serviceHost) {
+      throw new Error('No bankly service hostconfigured')
     }
 
-    this.serviceHost = `${serviceHost}:${servicePort}`
+    this.serviceHost = `${serviceHost}`
   }
 
   async getAccounts() {
-    const response = await this.requestAdapter.get(`http://${this.serviceHost}/api/Account`)
+    const response = await this.requestAdapter.get(`${this.serviceHost}/api/Account`)
     if (response.status >= 300) {
       const { traceId, message } = this.loggerService.log('ERROR', `Error to get accounts`, response.data)
 
@@ -49,7 +48,7 @@ export default class AccountApiService implements IAccountApi {
   }
 
   async getBalance(accountNumber: string) {
-    const response = await this.requestAdapter.get(`http://${this.serviceHost}/api/Account/${accountNumber}`)
+    const response = await this.requestAdapter.get(`${this.serviceHost}/api/Account/${accountNumber}`)
     if (response.status >= 300) {
       const { traceId, message } = this.loggerService.log(
         'ERROR',
@@ -68,7 +67,7 @@ export default class AccountApiService implements IAccountApi {
   }
 
   async updateBalance(params: UpdateBalanceParam): Promise<AccountBalance> {
-    const response = await this.requestAdapter.post(`http://${this.serviceHost}/api/Account`, params)
+    const response = await this.requestAdapter.post(`${this.serviceHost}/api/Account`, params)
 
     if (response.status >= 300) {
       const errorMessage = `Error to update balance to the account n. ${params.accountNumber}`
