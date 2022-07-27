@@ -9,7 +9,7 @@ export default class DatabaseAdapter implements IDatabaseAdapter {
     return DatabaseAdapter._instance
   }
 
-  private set instance(instance) {
+  public set instance(instance) {
     DatabaseAdapter._instance = instance
   }
 

@@ -9,7 +9,7 @@ export type UpdateBalanceParam = {
   type: 'Credit' | 'Debit'
 }
 
-export type TransferBalanceParam = {
+export type TransactionCreatorParam = {
   accountOrigin: string
   accountDestination: string
   value: number
@@ -18,6 +18,6 @@ export type TransferBalanceParam = {
 export default interface IAccountApi {
   getBalance(accountNumber: string): Promise<AccountBalance>
   updateBalance(params: UpdateBalanceParam): Promise<AccountBalance>
-  transferBalance(params: TransferBalanceParam): Promise<{ transactionId: string }>
-  getTransferBalanceStatus(operationId: string): Promise<{ status: string; error: string }>
+  createTransaction(params: TransactionCreatorParam): Promise<{ transactionId: string }>
+  getTransactionStatus(transactionId: string): Promise<{ status: string; error: string }>
 }

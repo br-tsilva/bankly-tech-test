@@ -1,5 +1,5 @@
 export type OperationType = 'Credit' | 'Debit'
-export type OperationStatus = 'Pending' | 'Error' | 'Completed' | 'Refund'
+export type OperationStatus = 'Pending' | 'In Queue' | 'Error' | 'Completed' | 'Refund'
 import { ITransactions } from '.'
 
 export default interface IOperations {

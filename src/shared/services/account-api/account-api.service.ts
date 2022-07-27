@@ -6,7 +6,7 @@ import { TransactionsRepository, OperationsRepository } from '@infra/repositorie
 import {
   default as IAccountApi,
   AccountBalance,
-  TransferBalanceParam,
+  TransactionCreatorParam,
   UpdateBalanceParam,
 } from './account-api.protocol'
 import { buildAccountBalancePayload } from './account-api.helper'
@@ -14,6 +14,7 @@ import { ExceptionHelper } from '@shared/helpers'
 import { httpStatusCodes } from '@shared/adapters'
 import { Transactions } from '@domain/useCases'
 import { default as config } from '@config'
+
 export default class AccountApiService implements IAccountApi {
   private serviceHost: string
 
@@ -65,7 +66,7 @@ export default class AccountApiService implements IAccountApi {
     return this.getBalance(params.accountNumber)
   }
 
-  async transferBalance(params: TransferBalanceParam) {
+  async createTransaction(params: TransactionCreatorParam) {
     const { accountOrigin, accountDestination } = params
 
     if (accountOrigin === accountDestination) {
@@ -74,10 +75,8 @@ export default class AccountApiService implements IAccountApi {
       })
     }
 
-    const databaseInstance = await this.databaseService.start()
-
-    const transactionsRepository = new TransactionsRepository(databaseInstance)
-    const operationsRepository = new OperationsRepository(databaseInstance)
+    const transactionsRepository = new TransactionsRepository(this.databaseService.instance)
+    const operationsRepository = new OperationsRepository(this.databaseService.instance)
 
     const createdTransaction = await transactionsRepository.createTransaction({
       value: params.value,
@@ -100,15 +99,13 @@ export default class AccountApiService implements IAccountApi {
 
     const payload = { transactionId: createdTransaction.id }
 
-    await this.messengerService.publish(Transactions.transferQueueName, JSON.stringify(payload))
+    await this.messengerService.publish(Transactions.updateStatusQueue, JSON.stringify(payload))
 
     return payload
   }
 
-  async getTransferBalanceStatus(transactionId: string) {
-    const databaseInstance = await this.databaseService.start()
-
-    const operationsRepository = new TransactionsRepository(databaseInstance)
+  async getTransactionStatus(transactionId: string) {
+    const operationsRepository = new TransactionsRepository(this.databaseService.instance)
     const transaction = await operationsRepository.getTransactionById(transactionId)
 
     if (!transaction) {

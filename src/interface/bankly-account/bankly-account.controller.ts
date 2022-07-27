@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import IAccountApi from '@shared/services/account-api/account-api.protocol'
 import { RequestAdapter, LoggerAdapter, DatabaseAdapter, MessengerAdapter } from '@shared/adapters'
 import { AccountApiService, LoggerService, DatabaseService, MessengerService } from '@shared/services'
-import { buildTransferBalancePayload } from './bankly-account.helper'
+import { buildTransactionCreatorPayload } from './bankly-account.helper'
 
 export default class BanklyAccountController {
   private accountApi: IAccountApi
@@ -35,25 +35,25 @@ export default class BanklyAccountController {
     })
   }
 
-  async transfer(request: Request, response: Response) {
+  async createTransaction(request: Request, response: Response) {
     const params = request.body
 
-    const transferResponse = await this.accountApi.transferBalance(buildTransferBalancePayload(params))
+    const transactionResponse = await this.accountApi.createTransaction(buildTransactionCreatorPayload(params))
 
     response.status(200).json({
       status: 200,
-      data: transferResponse,
+      data: transactionResponse,
     })
   }
 
-  async getTransferStatus(request: Request, response: Response) {
+  async getTransactionStatus(request: Request, response: Response) {
     const params = request.params
 
-    const transferStatusResponse = await this.accountApi.getTransferBalanceStatus(params.operationId)
+    const transactionStatusResponse = await this.accountApi.getTransactionStatus(params.transactionId)
 
     response.status(200).json({
       status: 200,
-      data: transferStatusResponse,
+      data: transactionStatusResponse,
     })
   }
 }

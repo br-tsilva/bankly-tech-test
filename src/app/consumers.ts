@@ -22,13 +22,13 @@ export default class Consumers {
       this.accountApiService,
     )
 
-    this.messengerService.consume(Transactions.transferQueueName, (message, done) =>
-      transactions.transfer(message, done),
+    this.messengerService.consume(Transactions.updateStatusQueue, (message, done) =>
+      transactions.updateStatus(message, done),
     )
-    this.messengerService.consume(Operations.updateBalanceQueueName, (message, done) =>
+    this.messengerService.consume(Operations.updateBalanceQueue, (message, done) =>
       operations.updateBalance(message, done),
     )
-    this.messengerService.consume(Operations.refundBalanceQueueName, (message, done) =>
+    this.messengerService.consume(Operations.refundBalanceQueue, (message, done) =>
       operations.refundBalance(message, done),
     )
   }

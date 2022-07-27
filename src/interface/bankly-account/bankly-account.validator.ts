@@ -8,16 +8,16 @@ const getBalance = <SchemaDefinition>{
   },
 }
 
-const getTransferStatus = <SchemaDefinition>{
-  operationId: {
+const getTransactionStatus = <SchemaDefinition>{
+  transactionId: {
     type: String,
     match: /^[a-z0-9-]+$/i,
     required: true,
-    message: { required: 'Operation id is required', match: 'Operation id is invalid' },
+    message: { required: 'Transaction id is required', match: 'Transaction id is invalid' },
   },
 }
 
-const transfer = <SchemaDefinition>{
+const createTransaction = <SchemaDefinition>{
   accountOrigin: {
     type: Number,
     required: true,
@@ -35,4 +35,4 @@ const transfer = <SchemaDefinition>{
   },
 }
 
-export default { getBalance, getTransferStatus, transfer }
+export default { getBalance, getTransactionStatus, createTransaction }

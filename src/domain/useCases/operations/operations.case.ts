@@ -8,9 +8,9 @@ import { OperationsContentQueue, RefundContentQueue } from '../operations/operat
 import { Transactions } from '../'
 
 export default class Operations {
-  private static _updateBalanceQueueName = 'update-balance-operations'
+  private static _updateBalanceQueue = 'operations-update-balance'
 
-  private static _refundBalanceQueueName = 'refund-balance-operations'
+  private static _refundBalanceQueue = 'operations-refund-balance'
 
   constructor(
     private databaseService: IDatabaseService,
@@ -19,20 +19,19 @@ export default class Operations {
     private accountApiService: IAccountApiService,
   ) {}
 
-  static get updateBalanceQueueName() {
-    return Operations._updateBalanceQueueName
+  static get updateBalanceQueue() {
+    return Operations._updateBalanceQueue
   }
 
-  static get refundBalanceQueueName() {
-    return Operations._refundBalanceQueueName
+  static get refundBalanceQueue() {
+    return Operations._refundBalanceQueue
   }
 
   async updateBalance(content: string, done: () => void): Promise<void> {
     const { transactionId, operationId }: OperationsContentQueue = JSON.parse(content)
-    const databaseInstance = await this.databaseService.start()
 
-    const transactionsRepository = new TransactionsRepository(databaseInstance)
-    const operationsRepository = new OperationsRepository(databaseInstance)
+    const transactionsRepository = new TransactionsRepository(this.databaseService.instance)
+    const operationsRepository = new OperationsRepository(this.databaseService.instance)
 
     try {
       const transaction = await transactionsRepository.getTransactionById(transactionId)
@@ -45,11 +44,6 @@ export default class Operations {
         throw new Error(`Operation N. ${operationId} was not found in transaction n. ${transactionId}`)
       }
 
-      if (transaction.status === 'Error' && operationAccount.status === 'Pending') {
-        await operationsRepository.updateOperationStatus(operationId, 'Refund')
-        return
-      }
-
       const account = await this.accountApiService.getBalance(operationAccount.accountNumber)
       if (operationAccount.type === 'Debit' && transaction.value > account.balance) {
         throw new Error(
@@ -57,31 +51,29 @@ export default class Operations {
         )
       }
 
-      await operationsRepository.updateOperationStatus(operationId, 'Completed')
       await this.accountApiService.updateBalance({
         accountNumber: operationAccount.accountNumber,
         type: operationAccount.type,
         value: transaction.value,
       })
+      await operationsRepository.updateOperationStatus(operationId, 'Completed')
     } catch (error) {
       if (error instanceof Exception || error instanceof Error) {
+        await operationsRepository.updateOperationStatus(operationId, 'Error')
         await transactionsRepository.updateTransactionStatus(transactionId, 'Error', error.message)
-
-        const payload: RefundContentQueue = { transactionId }
-        this.messengerService.publish(Operations.refundBalanceQueueName, JSON.stringify(payload))
       }
     } finally {
-      this.messengerService.publish(Transactions.transferQueueName, JSON.stringify({ transactionId }))
+      const payload: RefundContentQueue = { transactionId }
+      this.messengerService.publish(Operations.refundBalanceQueue, JSON.stringify(payload))
       done()
     }
   }
 
   async refundBalance(content: string, done: () => void): Promise<void> {
     const { transactionId }: RefundContentQueue = JSON.parse(content)
-    const databaseInstance = await this.databaseService.start()
 
-    const transactionsRepository = new TransactionsRepository(databaseInstance)
-    const operationsRepository = new OperationsRepository(databaseInstance)
+    const transactionsRepository = new TransactionsRepository(this.databaseService.instance)
+    const operationsRepository = new OperationsRepository(this.databaseService.instance)
 
     try {
       const transaction = await transactionsRepository.getTransactionById(transactionId)
@@ -89,30 +81,36 @@ export default class Operations {
         throw new Error(`Transaction N. ${transactionId} not found`)
       }
 
-      for (const operation of transaction.operations) {
-        try {
-          const reverseOperationType = operation.type === 'Credit' ? 'Debit' : 'Credit'
+      const hasSomeErrorOperation = transaction.operations.some((operation) => operation.status === 'Error')
+      if (hasSomeErrorOperation) {
+        const completedOperations = transaction.operations.filter((operation) =>
+          ['Completed'].includes(operation.status),
+        )
+        for (const operation of completedOperations) {
+          try {
+            const reverseOperationType = operation.type === 'Credit' ? 'Debit' : 'Credit'
 
-          await operationsRepository.updateOperationStatus(operation.id, 'Refund')
-          await this.accountApiService.updateBalance({
-            accountNumber: operation.accountNumber,
-            type: reverseOperationType,
-            value: transaction.value,
-          })
-        } catch (error) {
-          if (error instanceof Exception || error instanceof Error) {
-            await operationsRepository.updateOperationStatus(operation.id, 'Error')
+            await this.accountApiService.updateBalance({
+              accountNumber: operation.accountNumber,
+              type: reverseOperationType,
+              value: transaction.value,
+            })
+
+            await operationsRepository.updateOperationStatus(operation.id, 'Refund')
+          } catch (error) {
+            if (error instanceof Exception || error instanceof Error) {
+              await operationsRepository.updateOperationStatus(operation.id, 'Error')
+            }
           }
         }
       }
-
-      done()
     } catch (error) {
       if (error instanceof Exception || error instanceof Error) {
         await transactionsRepository.updateTransactionStatus(transactionId, 'Error', error.message)
       }
     } finally {
-      this.messengerService.publish(Transactions.transferQueueName, JSON.stringify({ transactionId }))
+      this.messengerService.publish(Transactions.updateStatusQueue, JSON.stringify({ transactionId }))
+      done()
     }
   }
 }

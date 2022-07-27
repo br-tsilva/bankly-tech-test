@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TransferBalanceParam } from '@shared/services/account-api/account-api.protocol'
 
-const buildTransferBalancePayload = (data: { [x: string]: any }): TransferBalanceParam => {
+const buildTransactionCreatorPayload = (data: { [x: string]: any }): TransferBalanceParam => {
   return {
     accountOrigin: String(data.accountOrigin),
     accountDestination: String(data.accountDestination),
@@ -9,4 +9,4 @@ const buildTransferBalancePayload = (data: { [x: string]: any }): TransferBalanc
   }
 }
 
-export { buildTransferBalancePayload }
+export { buildTransactionCreatorPayload }

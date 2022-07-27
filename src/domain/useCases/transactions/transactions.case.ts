@@ -2,13 +2,14 @@ import { default as IDatabaseService } from '@shared/services/database/database.
 import { default as ILoggerService } from '@shared/services/logger/logger.protocol'
 import { default as IMessengerService } from '@shared/services/messenger/messenger.protocol'
 import { default as Exception } from '@shared/helpers/exception.helper'
-import { TransactionsRepository } from '@infra/repositories'
+import { TransactionsRepository, OperationsRepository } from '@infra/repositories'
 import { TransactionContentQueue } from './transactions.protocol'
 import { default as Operations } from '../operations/operations.case'
 import { OperationsContentQueue } from '../operations/operations.protocol'
+import { IOperations } from '@domain/models'
 
 export default class Transactions {
-  private static _transferQueueName = 'transfer-transactions'
+  private static _updateStatusQueue = 'transfers-update-status'
 
   constructor(
     private databaseService: IDatabaseService,
@@ -16,15 +17,15 @@ export default class Transactions {
     private loggerService: ILoggerService,
   ) {}
 
-  static get transferQueueName() {
-    return Transactions._transferQueueName
+  static get updateStatusQueue() {
+    return Transactions._updateStatusQueue
   }
 
-  async transfer(content: string, done: () => void): Promise<void> {
+  async updateStatus(content: string, done: () => void): Promise<void> {
     const { transactionId }: TransactionContentQueue = JSON.parse(content)
-    const databaseInstance = await this.databaseService.start()
 
-    const transactionsRepository = new TransactionsRepository(databaseInstance)
+    const transactionsRepository = new TransactionsRepository(this.databaseService.instance)
+    const operationsRepository = new OperationsRepository(this.databaseService.instance)
 
     try {
       const transaction = await transactionsRepository.getTransactionById(transactionId)
@@ -32,29 +33,49 @@ export default class Transactions {
         throw new Error(`Transaction N. ${transactionId} not found`)
       }
 
-      const completedOperations = transaction.operations.filter((operation) => operation.status !== 'Pending')
-      if (completedOperations.length === transaction.operations.length) {
-        let status: 'Confirmed' | 'Error' = 'Confirmed'
+      const [inQueueOperations, pendingOperations] = transaction.operations.reduce(
+        ([_inQueueOperations, _pendingOperations], operation) => {
+          if (operation.status === 'Pending') {
+            _pendingOperations.push(operation)
+          }
+          if (operation.status === 'In Queue') {
+            _inQueueOperations.push(operation)
+          }
 
-        const errorOperation = completedOperations.some((operation) => operation.status === 'Error')
-        if (errorOperation) {
-          status = 'Error'
+          return [_inQueueOperations, _pendingOperations]
+        },
+        <IOperations[][]>[[], []],
+      )
+
+      if (pendingOperations.length) {
+        await transactionsRepository.updateTransactionStatus(transactionId, 'Processing')
+
+        const operationsContent: OperationsContentQueue[] = pendingOperations.map((operation) => ({
+          transactionId: transaction.id,
+          operationId: operation.id,
+        }))
+
+        for (const operation of operationsContent) {
+          await operationsRepository.updateOperationStatus(operation.operationId, 'In Queue')
+          this.messengerService.publish(Operations.updateBalanceQueue, JSON.stringify(operation))
         }
-
-        await transactionsRepository.updateTransactionStatus(transactionId, status)
         return
       }
 
-      await transactionsRepository.updateTransactionStatus(transactionId, 'Processing')
+      if (inQueueOperations.length) {
+        return
+      }
 
-      const operationsContent: OperationsContentQueue[] = transaction.operations.map((operation) => ({
-        transactionId: transaction.id,
-        operationId: operation.id,
-      }))
+      const hasSomeErrorOperation = transaction.operations.some((operation) =>
+        ['Error', 'Refund'].includes(operation.status),
+      )
 
-      operationsContent.forEach((operation) => {
-        this.messengerService.publish(Operations.updateBalanceQueueName, JSON.stringify(operation))
-      })
+      let status: 'Confirmed' | 'Error' = 'Confirmed'
+      if (hasSomeErrorOperation) {
+        status = 'Error'
+      }
+
+      await transactionsRepository.updateTransactionStatus(transactionId, status)
     } catch (error) {
       if (error instanceof Exception || error instanceof Error) {
         await transactionsRepository.updateTransactionStatus(transactionId, 'Error', error.message)

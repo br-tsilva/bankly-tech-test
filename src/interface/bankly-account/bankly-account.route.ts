@@ -9,7 +9,7 @@ const path = '/bankly-account'
 const banklyAccountController = new BanklyAccountController()
 
 router.get(
-  `${path}/:accountNumber/balance`,
+  `${path}/account/:accountNumber/balance`,
   validator(banklyAccountValidator.getBalance),
   async (request, response) => {
     await banklyAccountController.getBalance(request, response)
@@ -17,15 +17,15 @@ router.get(
 )
 
 router.get(
-  `${path}/transfer/:operationId/status`,
-  validator(banklyAccountValidator.getTransferStatus),
+  `${path}/transaction/:transactionId/status`,
+  validator(banklyAccountValidator.getTransactionStatus),
   async (request, response) => {
-    await banklyAccountController.getTransferStatus(request, response)
+    await banklyAccountController.getTransactionStatus(request, response)
   },
 )
 
-router.post(`${path}/transfer`, validator(banklyAccountValidator.transfer), async (request, response) => {
-  await banklyAccountController.transfer(request, response)
+router.post(`${path}/transaction`, validator(banklyAccountValidator.createTransaction), async (request, response) => {
+  await banklyAccountController.createTransaction(request, response)
 })
 
 export default router
